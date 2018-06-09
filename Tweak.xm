@@ -6,13 +6,13 @@
  *
  */
 
-#import <CoreFoundation/CoreFoundation.h>
-#import <UIKit/UIKit.h>
-#import <objc/runtime.h>
-#import <substrate.h>
+// #import <CoreFoundation/CoreFoundation.h>
+// #import <Foundation/Foundation.h>
+// #import <UIKit/UIKit.h>
+// #import <objc/runtime.h>
+// #import <substrate.h>
 #import <rocketbootstrap/rocketbootstrap.h>
 
-#import <Foundation/Foundation.h>
 #import "Interfaces.h"
 
 #ifdef DEBUG
@@ -90,7 +90,6 @@ static NSDictionary* GetFriendmojis(){
 }
 
 /* Sends a Mach message to the daemon using Distributed Notifications via the bootstrap server */
-
 static void SendFriendmojisToDaemon(){
     SNLog(@"StreakNotify::Sending friendmojis to Daemon");
     
@@ -99,31 +98,6 @@ static void SendFriendmojisToDaemon(){
     rocketbootstrap_distributedmessagingcenter_apply(c);
     [c sendMessageName:@"friendmojis"
               userInfo:GetFriendmojis()];
-}
-
-static void SizeLabelToRect(UILabel *label, CGRect labelRect){
-    /* Fit text into UILabel */
-    label.frame = labelRect;
-    
-    int fontSize = 15;
-    int minFontSize = 3;
-    
-    CGSize constraintSize = CGSizeMake(label.frame.size.width, MAXFLOAT);
-    
-    do {
-        label.font = [UIFont fontWithName:label.font.fontName size:fontSize];
-        
-        CGRect textRect = [[label text] boundingRectWithSize:constraintSize
-                                                     options:NSStringDrawingUsesLineFragmentOrigin
-                                                  attributes:@{NSFontAttributeName:label.font}
-                                                     context:nil];
-        CGSize size = textRect.size;
-        if(size.height <= label.frame.size.height )
-            break;
-        
-        fontSize -= 0.2;
-        
-    } while (fontSize > minFontSize);
 }
 
 SOJUFriendmoji* FindOnFireEmoji(NSArray *friendmojis){
@@ -227,10 +201,7 @@ static void ScheduleNotifications(){
     if([[chats allChats] count]){
         for(SCChat *chat in [chats allChats]){
             
-            // Snap *earliestUnrepliedSnap = FindEarliestUnrepliedSnapForChat(YES,chat);
             Friend *f = [friends friendForName:[chat recipient]];
-            
-            // NSDate *expirationDate = nil;
             NSArray *friendmojis = f.friendmojis;
             SOJUFriendmoji *friendmoji = FindOnFireEmoji(friendmojis);
             long long expirationTimeValue = [friendmoji expirationTimeValue];
@@ -303,10 +274,8 @@ static UILabel* GetLabelFromCell(UIView *cell, NSMutableArray *instances, NSMuta
         
         label = [[UILabel alloc] initWithFrame:rect];
         label.textAlignment = NSTextAlignmentRight;
-        
         [instances addObject:cell];
         [labels addObject:label];
-        
         [cell addSubview:label];
     } else {
         label = [labels objectAtIndex:[instances indexOfObject:cell]];
@@ -337,9 +306,7 @@ static NSString* ConfigureCell(UIView *cell,
                                NSMutableArray *instances,
                                NSMutableArray *labels,
                                Friend *f,
-                               SCChat *chat
-                               // Snap *snap
-                               ){
+                               SCChat *chat){
 
     UILabel *label = GetLabelFromCell(cell,instances,labels);
     NSString *text = TextForLabel(f,chat);
@@ -350,27 +317,15 @@ static NSString* ConfigureCell(UIView *cell,
         label.hidden = YES;
     }else{
         label.hidden = NO;
-        SizeLabelToRect(label,label.frame);
+        label.font = [UIFont fontWithName:label.font.fontName size:11];
     }
     return label.text;
 }
 
-/* Remote notification has been sent from the APNS server and we must let the app know so that it can schedule a notification for the chat */
-/* We need to fetch updates so that the new snap that was sent from the notification can now be recognized as far as notifications go */
-/* Otherwise we won't be able to set the notification properly because the new snap or message hasn't been tracked by the application */
-// void FetchUpdates(){
-//     [objc_getClass("Manager") fetchAllUpdatesWithParameters:nil successBlock:^{
-//         SNLog(@"StreakNotify:: Finished fetching updates from remote notification, resetting local notifications");
-//         ScheduleNotifications();
-//     } failureBlock:nil];
-// }
 
-
-#ifdef THEOS
 %group SnapchatHooks
-%hook MainViewController
-#endif
 
+%hook MainViewController
 -(void)viewDidLoad{
     /* Setting up all the user specific data */
     
@@ -431,10 +386,7 @@ static NSString* ConfigureCell(UIView *cell,
     [chats chatsDidChange];
 }
 
-#ifdef THEOS
 %new
-#endif
-
 -(void)alertView:(UIAlertView *)alertView
 clickedButtonAtIndex:(NSInteger)buttonIndex{
     if(buttonIndex==0){
@@ -456,15 +408,10 @@ clickedButtonAtIndex:(NSInteger)buttonIndex{
         exit(0);
     }
 }
-
-#ifdef THEOS
 %end
-#endif
 
-#ifdef THEOS
+
 %hook SCAppDelegate
-#endif
-
 -(BOOL)application:(UIApplication*)application
 didFinishLaunchingWithOptions:(NSDictionary*)launchOptions{
     
@@ -486,12 +433,8 @@ didFinishLaunchingWithOptions:(NSDictionary*)launchOptions{
     rocketbootstrap_distributedmessagingcenter_apply(c);
     [c sendMessageName:@"applicationLaunched" userInfo:nil];
     
-    // SNLog(@"StreakNotify:: Sending a Friendmoji to the Daemon :)");
-
+    SNLog(@"StreakNotify:: Sending a Friendmoji to the Daemon :)");
     SendFriendmojisToDaemon();
-    // SNLog(@"StreakNotify:: Sent Daemon the Friendmojis");
-
-    
     return %orig();
 }
 
@@ -500,7 +443,6 @@ didReceiveRemoteNotification:(NSDictionary *)userInfo
 fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler{
     /* Update LocalNotifications when a RemoteNotification is received */
     LoadPreferences();
-    // HandleRemoteNotification();
     %orig();
 }
 
@@ -508,7 +450,6 @@ fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler{
 didReceiveLocalNotification:(UILocalNotification *)notification{
     %orig();
     LoadPreferences();
-    // HandleLocalNotification(notification.userInfo[@"Username"]);
 }
 
 -(void)applicationWillTerminate:(UIApplication *)application {
@@ -521,33 +462,13 @@ didReceiveLocalNotification:(UILocalNotification *)notification{
      userInfo:nil];*/
     %orig();
 }
-
-
-#ifdef THEOS
 %end
-#endif
+
 
 static NSMutableArray *feedCells = nil;
 static NSMutableArray *feedCellLabels = nil;
 
-// #ifdef THEOS
-// %hook SCFeedSwipeableTableViewCell
-// #endif
-
-// -(void)updateReplyButtonWithIdentifer:(id)arg1 updateFriendMoji:(_Bool)arg2{
-    
-// }
-
-// #if THEOS
-// %end
-// #endif
-
-
-#ifdef THEOS
 %hook SCCheetahFeedViewController
-#endif
-
-
 -(UITableViewCell*)tableView:(UITableView*)tableView cellForRowAtIndexPath:(NSIndexPath*)indexPath{
     /*
      *  updating tableview and we want to make sure the feedCellLabels are updated too, if not
@@ -556,9 +477,10 @@ static NSMutableArray *feedCellLabels = nil;
     
     SCFeedSwipeableTableViewCell *cell = (SCFeedSwipeableTableViewCell*) %orig(tableView,indexPath);
     NSString *username = [(SCFeedChatCellViewModel*)[cell viewModel] identifier];
-    if(!feedCells){
+    if (!feedCells) {
         feedCells = [[NSMutableArray alloc] init];
-    } if(!feedCellLabels){
+    } 
+    if (!feedCellLabels) {
         feedCellLabels = [[NSMutableArray alloc] init];
     }
     
@@ -578,241 +500,29 @@ static NSMutableArray *feedCellLabels = nil;
             SCChat *chat = [chats chatForUsername:username];
             Friends *friends = [user friends];
             Friend *f = [friends friendForName:username];
-
-            if ([f snapStreakCount]>2)
-                ConfigureCell(cell.feedComponentView, feedCells, feedCellLabels, f, chat);
-        
+            ConfigureCell(cell.feedComponentView, feedCells, feedCellLabels, f, chat);
         } else{
             SNLog(@"StreakNotify::username not found, Snapchat was updated and no selector was found");
             // Todo: let the user know that the timer could not added to the cells
         }
-        
     });
 
     return cell;
 }
 
-// Still active in the current Snapchat version
--(void)pullToRefreshDidFinish{
-    // reloadData();
-
-    SNLog(@"StreakNotify::Finished reloading data");
-    %orig();
-    ScheduleNotifications();
-}
-
-
 -(void)pullToRefreshDidFinish:(id)arg{
-    // reloadData();
-    SNLog(@"StreakNotify::Finished reloading data");
     %orig();
+    SNLog(@"StreakNotify::Finished reloading data");
     ScheduleNotifications();
 }
-
-#ifdef THEOS
 %end
-#endif
-
-// static NSMutableArray *contactCells = nil;
-// static NSMutableArray *contactCellLabels = nil;
-
-// #ifdef THEOS
-// %hook SCMyContactsViewController
-// #endif
-
-// -(UITableViewCell*)tableView:(UITableView*)tableView
-// cellForRowAtIndexPath:(NSIndexPath*)indexPath{
-//     UITableViewCell *cell = %orig(tableView,indexPath);
-    
-    
-//     dispatch_async(dispatch_get_main_queue(), ^{
-        
-//         if([cell isKindOfClass:objc_getClass("SCFriendProfileCell")]){
-//             SCFriendProfileCell *friendCell = (SCFriendProfileCell*)cell;
-            
-//             if(!contactCells){
-//                 contactCells = [[NSMutableArray alloc] init];
-//             } if(!contactCellLabels){
-//                 contactCellLabels = [[NSMutableArray alloc] init];
-//             }
-            
-//             Friend *f = nil;
-            
-//             if([friendCell respondsToSelector:@selector(cellView)]){
-//                 SCFriendProfileCellView *friendCellView = friendCell.cellView;
-//                 f = [friendCellView friend];
-//             } else if([friendCell respondsToSelector:@selector(currentFriend)]){
-//                 f = [friendCell currentFriend];
-//             }
-            
-//             if(f){
-//                 SNLog(@"StreakNotify::contactsViewController:%@ friend found displaying timer",[f name]);
-//                 Manager *manager = [objc_getClass("Manager") shared];
-//                 User *user = [manager user];
-//                 SCChats *chats = [user chats];
-//                 SCChat *chat = [chats chatForUsername:[f name]];
-                
-//                 Snap *earliestUnrepliedSnap = FindEarliestUnrepliedSnapForChat(YES,chat);
-                
-//                 SNLog(@"StreakNotify::%@ is earliest unreplied snap %@",earliestUnrepliedSnap,[earliestUnrepliedSnap timestamp]);
-//                 ConfigureCell(cell, contactCells, contactCellLabels, f, chat, earliestUnrepliedSnap);
-//             }else{
-//                 SNLog(@"StreakNotify::contactsViewController: friend not found, no selector was found to find the model!");
-//             }
-//         }
-//     });
-    
-    
-//     return cell;
-// }
-
-// -(void)dealloc{
-//     SNLog(@"StreakNotify::Deallocating contactsViewController");
-//     [contactCells removeAllObjects];
-//     [contactCellLabels removeAllObjects];
-//     [contactCells release];
-//     [contactCellLabels release];
-//     contactCells = nil;
-//     contactCellLabels = nil;
-//     %orig();
-// }
-
-// #ifdef THEOS
-// %end
-// #endif
-
-// static NSMutableArray *storyCells = nil;
-// static NSMutableArray *storyCellLabels = nil;
 
 
-// #ifdef THEOS
-// %hook SCStoriesViewController
-// #endif
-
-// -(UITableViewCell*)tableView:(UITableView*)tableView
-// cellForRowAtIndexPath:(NSIndexPath*)indexPath{
-//     UITableViewCell *cell = %orig(tableView,indexPath);
-    
-//     dispatch_async(dispatch_get_main_queue(), ^{
-        
-//         /* want to do this on the main thread because all ui updates should be done on the main thread
-//          this should already be on the main thread but we should make sure of this
-//          */
-        
-//         if([cell isKindOfClass:objc_getClass("StoriesCell")]){
-//             StoriesCell *storiesCell = (StoriesCell*)cell;
-            
-//             if(!storyCells){
-//                 storyCells = [[NSMutableArray alloc] init];
-//             } if(!storyCellLabels){
-//                 storyCellLabels = [[NSMutableArray alloc] init];
-//             }
-            
-//             FriendStories *stories = storiesCell.friendStories;
-            
-//             NSString *username = stories.username;
-            
-//             Manager *manager = [objc_getClass("Manager") shared];
-//             User *user = [manager user];
-            
-//             SCChats *chats = [user chats];
-//             Friends *friends = [user friends];
-            
-//             SCChat *chat = [chats chatForUsername:username];
-//             Friend *f = [friends friendForName:username];
-            
-//             // Friend *f = [feedItem friendForFeedItem];
-//             /* deprecated/removed in Snapchat 9.34.0 */
-            
-//             Snap *earliestUnrepliedSnap = FindEarliestUnrepliedSnapForChat(YES,chat);
-            
-//             SNLog(@"StreakNotify::%@ is earliest unreplied snap %@",earliestUnrepliedSnap,[earliestUnrepliedSnap timestamp]);
-            
-//             if([storiesCell respondsToSelector:@selector(isTapToReplyMode)]
-//                && ![storiesCell isTapToReplyMode]){
-//                 ConfigureCell(cell, storyCells, storyCellLabels, f, chat, earliestUnrepliedSnap);
-//             }else{
-//                 UILabel *label = GetLabelFromCell(cell,storyCells,storyCellLabels);
-//                 label.text = @"";
-//                 label.hidden = YES;
-//             }
-//         }
-//     });
-    
-    
-//     return cell;
-// }
-
-// -(void)dealloc{
-//     SNLog(@"StreakNotify::Deallocating storiesViewController");
-//     [storyCells removeAllObjects];
-//     [storyCellLabels removeAllObjects];
-//     [storyCells release];
-//     [storyCellLabels release];
-//     storyCells = nil;
-//     storyCellLabels = nil;
-//     %orig();
-// }
-
-// #ifdef THEOS
-// %end
-// #endif
-
-// #ifdef THEOS
-// %hook SCSelectRecipientsView
-// #endif
-
-// -(UITableViewCell*)tableView:(UITableView*)tableView
-// cellForRowAtIndexPath:(NSIndexPath*)indexPath{
-//     UITableViewCell *cell = %orig(tableView,indexPath);
-    
-//     dispatch_async(dispatch_get_main_queue(), ^{
-//         if([cell isKindOfClass:objc_getClass("SelectContactCell")]){
-//             SelectContactCell *contactCell = (SelectContactCell*)cell;
-//             Manager *manager = [objc_getClass("Manager") shared];
-//             User *user = [manager user];
-//             SCChats *chats = [user chats];
-            
-//             Friend *f = [self getFriendAtIndexPath:indexPath];
-//             if(f && [f isKindOfClass:objc_getClass("Friend")]){
-//                 SCChat *chat = [chats chatForUsername:[f name]];
-//                 UILabel *label = contactCell.subNameLabel;
-//                 NSString *text = TextForLabel(f,chat);
-//                 label.text = text;
-                
-//                 if([text isEqualToString:@""]){
-//                     label.hidden = YES;
-//                 }else{
-//                     label.hidden = NO;
-//                 }
-//             }
-//         }
-//     });
-//     return cell;
-// }
+%end // end group SnapchatHooks
 
 
-// #ifdef THEOS
-// %end
-// #endif
-
-// static NSMutableArray *chatCells = nil;
-// static NSMutableArray *chatCellLabels = nil;
-
-#ifdef THEOS
-// %end
-%end
-#endif
-
-
-
-#ifdef THEOS
 %ctor
-#else
-void constructor()
-#endif
 {
-    
     /*
      *  Coming from MobileLoader, which loads into Snapchat via the DYLD_INSERT_LIBRARIES
      *  variable. Let's start doing some fun hooks into Snapchat to keep the streak going
