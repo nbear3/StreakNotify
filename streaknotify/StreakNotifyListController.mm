@@ -37,33 +37,33 @@
     waitpid(pid, &status, WEXITED);
 }
 
- -(void)choosePhotoForAutoReplySnapstreak{
-     NSLog(@"streaknotify:: prompting user to select auto reply snapstreak image");
-    UIImagePickerController *pickerLibrary = [[UIImagePickerController alloc] init];
-    pickerLibrary.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
-    pickerLibrary.delegate = self;
-    [self presentViewController:pickerLibrary animated:YES completion:nil];
- }
+ // -(void)choosePhotoForAutoReplySnapstreak{
+ //     NSLog(@"streaknotify:: prompting user to select auto reply snapstreak image");
+ //    UIImagePickerController *pickerLibrary = [[UIImagePickerController alloc] init];
+ //    pickerLibrary.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+ //    pickerLibrary.delegate = self;
+ //    [self presentViewController:pickerLibrary animated:YES completion:nil];
+ // }
 
- -(void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info{
-    UIImage *image = [info valueForKey:UIImagePickerControllerOriginalImage];
-    NSData *imageData = UIImageJPEGRepresentation(image,0.7);
+ // -(void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info{
+ //    UIImage *image = [info valueForKey:UIImagePickerControllerOriginalImage];
+ //    NSData *imageData = UIImageJPEGRepresentation(image,0.7);
  
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-    NSString *documentsDirectory = [paths objectAtIndex:0];
+ //    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+ //    NSString *documentsDirectory = [paths objectAtIndex:0];
  
-    if (![[NSFileManager defaultManager] fileExistsAtPath:documentsDirectory]){
-        NSError *error;
-        [[NSFileManager defaultManager] createDirectoryAtPath:documentsDirectory withIntermediateDirectories:NO attributes:nil error:&error];
-    }
+ //    if (![[NSFileManager defaultManager] fileExistsAtPath:documentsDirectory]){
+ //        NSError *error;
+ //        [[NSFileManager defaultManager] createDirectoryAtPath:documentsDirectory withIntermediateDirectories:NO attributes:nil error:&error];
+ //    }
  
-    NSString *filePath = [documentsDirectory stringByAppendingPathComponent:@"streaknotify_autoreply.jpeg"];
+ //    NSString *filePath = [documentsDirectory stringByAppendingPathComponent:@"streaknotify_autoreply.jpeg"];
  
-    NSLog(@"streaknotify:: Writing autoreply image to file %@",filePath);
+ //    NSLog(@"streaknotify:: Writing autoreply image to file %@",filePath);
  
-    [imageData writeToFile:filePath atomically:YES];
-    [picker dismissViewControllerAnimated:YES completion:nil];
- }
+ //    [imageData writeToFile:filePath atomically:YES];
+ //    [picker dismissViewControllerAnimated:YES completion:nil];
+ // }
 
 
 // follow my twitter
@@ -77,10 +77,8 @@
 
 // check out my project on github
 -(void)github {
-    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://github.com/yungraj/StreakNotify"]];
+    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://github.com/nbear3/StreakNotify"]];
 }
-
-
 @end
 
 

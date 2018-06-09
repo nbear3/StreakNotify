@@ -240,7 +240,7 @@
 			<key>icon</key>
 			<string>github@2x.png</string>
 			<key>label</key>
-			<string>Check out StreakNotify on GitHub</string>
+			<string>Checkout StreakNotify Fork on GitHub</string>
 		</dict>
 		<dict>
 			<key>cell</key>
