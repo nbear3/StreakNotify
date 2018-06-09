@@ -6,13 +6,7 @@
  *
  */
 
-// #import <CoreFoundation/CoreFoundation.h>
-// #import <Foundation/Foundation.h>
-// #import <UIKit/UIKit.h>
-// #import <objc/runtime.h>
-// #import <substrate.h>
 #import <rocketbootstrap/rocketbootstrap.h>
-
 #import "Interfaces.h"
 
 #ifdef DEBUG
@@ -44,6 +38,8 @@ static void LoadPreferences() {
         }
     }
 }
+
+static void ReconfigureCells();
 
 static NSDictionary* GetFriendmojis(){
     SNLog(@"StreakNotify:: Getting Friendmojis...");
@@ -111,7 +107,6 @@ SOJUFriendmoji* FindOnFireEmoji(NSArray *friendmojis){
     }
     return nil;
 }
-
 
 static NSString* GetTimeRemaining(NSDate *expirationDate){
     
@@ -262,10 +257,11 @@ static void ScheduleNotifications(){
                   userInfo:notificationsInfo];
 }
 
-static UILabel* GetLabelFromCell(UIView *cell, NSMutableArray *instances, NSMutableArray *labels) {
+static UILabel* GetLabelFromCell(UITableViewCell *cell, NSMutableArray *instances, NSMutableArray *labels) {
     UILabel *label;
     if (![instances containsObject:cell]) {
         SNLog(@"StreakNotify::Trying to add label to the cell");
+        // UIView *feedView = cell.feedComponentView;
         CGSize size = cell.frame.size;
         CGRect rect = CGRectMake(size.width*.75,
                                  size.height*.7,
@@ -274,6 +270,7 @@ static UILabel* GetLabelFromCell(UIView *cell, NSMutableArray *instances, NSMuta
         
         label = [[UILabel alloc] initWithFrame:rect];
         label.textAlignment = NSTextAlignmentRight;
+        label.font = [UIFont fontWithName:label.font.fontName size:11];
         [instances addObject:cell];
         [labels addObject:label];
         [cell addSubview:label];
@@ -283,7 +280,7 @@ static UILabel* GetLabelFromCell(UIView *cell, NSMutableArray *instances, NSMuta
     return label;
 }
 
-static NSDate* GetExpirationDate(Friend *f,SCChat *chat){
+static NSDate* GetExpirationDate(Friend *f){
     NSArray *friendmojis = f.friendmojis;
     SOJUFriendmoji *friendmoji = FindOnFireEmoji(friendmojis);
     long long expirationTimeValue = [friendmoji expirationTimeValue];
@@ -291,7 +288,7 @@ static NSDate* GetExpirationDate(Friend *f,SCChat *chat){
 }
 
 static NSString *TextForLabel(Friend *f, SCChat *chat){
-    NSDate *expirationDate = GetExpirationDate(f,chat);
+    NSDate *expirationDate = GetExpirationDate(f);
     if ([expirationDate laterDate:[NSDate date]]!=expirationDate){
         return @"";
     } else if ([f snapStreakCount]>2 && objc_getClass("SOJUFriendmoji") && [[chat lastSnap] sender]){
@@ -302,24 +299,33 @@ static NSString *TextForLabel(Friend *f, SCChat *chat){
     return @"";
 }
 
-static NSString* ConfigureCell(UIView *cell,
+static void ConfigureCell(SCFeedSwipeableTableViewCell *cell,
                                NSMutableArray *instances,
-                               NSMutableArray *labels,
-                               Friend *f,
-                               SCChat *chat){
+                               NSMutableArray *labels){
 
-    UILabel *label = GetLabelFromCell(cell,instances,labels);
-    NSString *text = TextForLabel(f,chat);
-    SNLog(@"StreakNotify::Label text %@", text);
-    label.text = text;
+    NSString *username = [(SCFeedChatCellViewModel*)[cell viewModel] identifier];
 
-    if([text isEqualToString:@""]){
-        label.hidden = YES;
-    }else{
-        label.hidden = NO;
-        label.font = [UIFont fontWithName:label.font.fontName size:11];
-    }
-    return label.text;
+    if (username){
+		Manager *manager = [objc_getClass("Manager") shared];
+	    User *user = [manager user];
+	    Friends *friends = [user friends];
+        SCChats *chats = [user chats];
+        SCChat *chat = [chats chatForUsername:username];
+	    Friend *f = [friends friendForName:username];
+
+	    UILabel *label = GetLabelFromCell(cell, instances, labels);
+	    NSString *text = TextForLabel(f, chat);
+	    // SNLog(@"StreakNotify::Label text %@", text);
+	    label.text = text;
+
+	    if([text isEqualToString:@""]){
+	        label.hidden = YES;
+	    }else{
+	        label.hidden = NO;
+	    }
+	} else {
+        SNLog(@"StreakNotify::username not found, Snapchat was updated and no selector was found");
+	}
 }
 
 
@@ -330,7 +336,13 @@ static NSString* ConfigureCell(UIView *cell,
     /* Setting up all the user specific data */
     
     %orig();
-    ScheduleNotifications();
+
+    @try {
+        ScheduleNotifications();
+    }
+    @catch (NSException *exception) {
+        SNLog(@"StreakNotify::ScheduleNotifications failed %@", exception.reason);
+    }
     
     if(!prefs) {
         SNLog(@"StreakNotify:: No preferences found on file, letting user know");
@@ -377,13 +389,11 @@ static NSString* ConfigureCell(UIView *cell,
     }
 }
 
--(void)didSendSnap:(Snap*)snap{
+-(void)didSendSnaps:(id)arg1{
+// -(void)didSendSnap:(Snap*)snap{
     %orig();
-    SNLog(@"StreakNotify::Snap to %@ has sent successfully",[snap recipient]);
-    Manager *manager = [objc_getClass("Manager") shared];
-    User *user = [manager user];
-    SCChats *chats = [user chats];
-    [chats chatsDidChange];
+    SNLog(@"StreakNotify::Snap to %@ has sent successfully", arg1);
+    ReconfigureCells();
 }
 
 %new
@@ -416,7 +426,6 @@ clickedButtonAtIndex:(NSInteger)buttonIndex{
 didFinishLaunchingWithOptions:(NSDictionary*)launchOptions{
     
     /* Register for local notifications, and do what we normally do */
-    
     snapchatVersion = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"];
     
     if ([application respondsToSelector:@selector(registerUserNotificationSettings:)]) {
@@ -434,7 +443,13 @@ didFinishLaunchingWithOptions:(NSDictionary*)launchOptions{
     [c sendMessageName:@"applicationLaunched" userInfo:nil];
     
     SNLog(@"StreakNotify:: Sending a Friendmoji to the Daemon :)");
-    SendFriendmojisToDaemon();
+    @try {
+        SendFriendmojisToDaemon();
+    }
+    @catch (NSException *exception) {
+        SNLog(@"StreakNotify::SendFriendmojisToDaemon failed %@", exception.reason);
+    }
+
     return %orig();
 }
 
@@ -448,27 +463,46 @@ fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler{
 
 -(void)application:(UIApplication *)application
 didReceiveLocalNotification:(UILocalNotification *)notification{
-    %orig();
     LoadPreferences();
-}
-
--(void)applicationWillTerminate:(UIApplication *)application {
-    SNLog(@"StreakNotify:: Snapchat application exiting, daemon will handle the exit of the application");
-    
-    /*
-     CPDistributedMessagingCenter *c = [CPDistributedMessagingCenter centerNamed:@"com.YungRaj.streaknotify"];
-     rocketbootstrap_distributedmessagingcenter_apply(c);
-     [c sendMessageName:@"applicationTerminated"
-     userInfo:nil];*/
     %orig();
 }
 %end
 
-
+static NSTimer *_labelTimer = nil;
 static NSMutableArray *feedCells = nil;
 static NSMutableArray *feedCellLabels = nil;
 
+static void ReconfigureCells() {
+    if (feedCells) {
+	    dispatch_async(dispatch_get_main_queue(), ^{
+	        for(SCFeedSwipeableTableViewCell *cell in feedCells){
+	            ConfigureCell(cell, feedCells, feedCellLabels);
+	        }
+	    });
+	}
+}
+
 %hook SCCheetahFeedViewController
+
+-(void)viewDidLoad{
+	%orig();
+
+    if (!feedCells) {
+        feedCells = [[NSMutableArray alloc] init];
+    } 
+    if (!feedCellLabels) {
+        feedCellLabels = [[NSMutableArray alloc] init];
+    }
+
+	_labelTimer = [NSTimer scheduledTimerWithTimeInterval:20.0 target:[NSBlockOperation blockOperationWithBlock:^{
+        SNLog(@"StreakNotify::Timer going off :)");
+        ReconfigureCells();
+	}] selector:@selector(main) userInfo:nil repeats:YES];
+
+	SNLog(@"StreakNotify::Label timer scheduled: %@", _labelTimer);
+}	
+
+
 -(UITableViewCell*)tableView:(UITableView*)tableView cellForRowAtIndexPath:(NSIndexPath*)indexPath{
     /*
      *  updating tableview and we want to make sure the feedCellLabels are updated too, if not
@@ -476,35 +510,14 @@ static NSMutableArray *feedCellLabels = nil;
      */
     
     SCFeedSwipeableTableViewCell *cell = (SCFeedSwipeableTableViewCell*) %orig(tableView,indexPath);
-    NSString *username = [(SCFeedChatCellViewModel*)[cell viewModel] identifier];
-    if (!feedCells) {
-        feedCells = [[NSMutableArray alloc] init];
-    } 
-    if (!feedCellLabels) {
-        feedCellLabels = [[NSMutableArray alloc] init];
-    }
-    
     dispatch_async(dispatch_get_main_queue(), ^{
-        
         /*
          *  Do this on the main thread because all UI updates should be done on the main
          *  thread
          *  This should already be on the main thread but we should make sure of this
          */
 
-        if (username){
-            SNLog(@"StreakNotify::%@ username found, showing label if possible",username);
-            Manager *manager = [objc_getClass("Manager") shared];
-            User *user = [manager user];
-            SCChats *chats = [user chats];
-            SCChat *chat = [chats chatForUsername:username];
-            Friends *friends = [user friends];
-            Friend *f = [friends friendForName:username];
-            ConfigureCell(cell.feedComponentView, feedCells, feedCellLabels, f, chat);
-        } else{
-            SNLog(@"StreakNotify::username not found, Snapchat was updated and no selector was found");
-            // Todo: let the user know that the timer could not added to the cells
-        }
+        ConfigureCell(cell, feedCells, feedCellLabels);
     });
 
     return cell;
@@ -513,8 +526,26 @@ static NSMutableArray *feedCellLabels = nil;
 -(void)pullToRefreshDidFinish:(id)arg{
     %orig();
     SNLog(@"StreakNotify::Finished reloading data");
+    ReconfigureCells();
     ScheduleNotifications();
 }
+
+- (void)viewDidDisappear:(BOOL)animated {
+    %orig();
+    SNLog(@"StreakNotify::View disappeared");
+
+    // Stop the timer when we leave
+    [_labelTimer invalidate];
+    _labelTimer = nil;
+}
+
+- (void)dealloc {
+	%orig();
+    SNLog(@"StreakNotify::Deallocating label timer");
+
+    [_labelTimer invalidate];
+}
+
 %end
 
 
