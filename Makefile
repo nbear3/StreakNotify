@@ -1,21 +1,21 @@
-include theos/makefiles/common.mk
+include $(THEOS)/makefiles/common.mk
 
-ARCHS = armv7 arm64
-
-
-TWEAK_NAME = StreakNotify
-StreakNotify_FILES = Tweak.xm
-StreakNotify_PRIVATE_FRAMEWORKS = AppSupport
-StreakNotify_LIBRARIES = rocketbootstrap
-StreakNotify_CFLAGS = -DTHEOS -Wno-deprecated-declarations
-
+TWEAK_NAME = Streakify
+Streakify_FILES = Tweak.xm 
+Streakify_PRIVATE_FRAMEWORKS = AppSupport
+Streakify_LIBRARIES = rocketbootstrap
+Streakify_CFLAGS = -fobjc-arc -DTHEOS
 
 include $(THEOS_MAKE_PATH)/tweak.mk
-
-
-after-install::
-	install.exec "killall -9 backboardd"
 SUBPROJECTS += streaknotify
 SUBPROJECTS += streaknotifyd
 SUBPROJECTS += friendmojilist
 include $(THEOS_MAKE_PATH)/aggregate.mk
+
+before-stage:: 
+	find . -name ".DS_Store" -delete
+	
+after-install::
+	install.exec "killall -9 backboardd"
+
+

@@ -1,10 +1,14 @@
+TARGET = iphone:clang:9.2:10.0
+ARCHS = armv7 arm64
+GO_EASY_ON_ME = 1
+
 include $(THEOS)/makefiles/common.mk
 
 BUNDLE_NAME = FriendmojiList
-FriendmojiList_FILES = FriendmojiTableDataSource.m FriendmojiListController.m 
-FriendmojiList_INSTALL_PATH = /System/Library/PreferenceBundles
-FriendmojiList_FRAMEWORKS = UIKit
-FriendmojiList_PRIVATE_FRAMEWORKS = Preferences
+$(BUNDLE_NAME)_CFLAGS = -fobjc-arc
+$(BUNDLE_NAME)_FILES = FriendmojiTableDataSource.mm FriendmojiListController.mm
+$(BUNDLE_NAME)_INSTALL_PATH = /Library/PreferenceBundles
+$(BUNDLE_NAME)_PRIVATE_FRAMEWORKS = Preferences
 
 include $(THEOS_MAKE_PATH)/bundle.mk
 

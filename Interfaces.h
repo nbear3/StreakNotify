@@ -2357,6 +2357,27 @@ typedef id CDUnknownBlockType;
 
 @end
 
+@interface SCFeedChatTableViewCell : UITableViewCell
+{
+    id <SCFeedSwipeDelegate, SCFeedGestureHandlerDelegate> _delegate;
+    SCChatViewModelForFeed <SCFeedCellViewModel> *_viewModel;
+}
+
+@property(retain, nonatomic) SCChatViewModelForFeed <SCFeedCellViewModel> *viewModel; // @synthesize viewModel=_viewModel;
+@property(nonatomic) __weak id <SCFeedSwipeDelegate, SCFeedGestureHandlerDelegate> delegate; // @synthesize delegate=_delegate;
+- (_Bool)longPressGestureRecognizerShouldBegin;
+- (_Bool)doubleTapGestureRecognizerShouldBegin;
+- (_Bool)delayedTapGestureRecognizerShouldBegin;
+- (_Bool)tapGestureRecognizerShouldBegin;
+- (void)handleLongPress:(id)arg1;
+- (void)handleDelayedTap:(id)arg1;
+- (void)handleDoubleTap:(id)arg1;
+- (void)handleTap:(id)arg1;
+- (void)viewHasFullyAppeared;
+- (id)identifier;
+
+@end
+
 @interface SCFeedSwipeableTableViewCell : SCFeedTableViewCell
 {
     UIImageView *_swipeBackgroundIconView;
@@ -3852,4 +3873,183 @@ typedef id CDUnknownBlockType;
 @interface SCReplyButton : UIView
 @end
 
+@class NSArray, NSDictionary, NSNumber, NSString, SOJUSecurityFideliusFriendInfo;
 
+@protocol SOJUFriend <NSObject, NSCoding, NSCopying>
+@property(readonly, copy, nonatomic) NSNumber *isStoryMuted;
+@property(readonly, copy, nonatomic) NSNumber *isPopular;
+@property(readonly, copy, nonatomic) NSDictionary *studySettings;
+@property(readonly, copy, nonatomic) NSString *bitmojiSnapcodeSelfieId;
+@property(readonly, copy, nonatomic) SOJUSecurityFideliusFriendInfo *fideliusInfo;
+@property(readonly, copy, nonatomic) NSNumber *canBeSharedByFriendsDeprecated;
+@property(readonly, copy, nonatomic) NSString *bitmojiSelfieId;
+@property(readonly, copy, nonatomic) NSNumber *pendingChatsCount;
+@property(readonly, copy, nonatomic) NSNumber *potentialHighQualityScore;
+@property(readonly, copy, nonatomic) NSString *bitmojiAvatarId;
+@property(readonly, copy, nonatomic) NSNumber *snapStreakExpiration;
+@property(readonly, copy, nonatomic) NSNumber *snapStreakCount;
+@property(readonly, copy, nonatomic) NSArray *friendmojis;
+@property(readonly, copy, nonatomic) NSArray *friendmojiSymbols;
+@property(readonly, copy, nonatomic) NSString *venue;
+@property(readonly, copy, nonatomic) NSNumber *dontDecayThumbnail;
+@property(readonly, copy, nonatomic) NSNumber *sojuNewLink;
+@property(readonly, copy, nonatomic) NSNumber *autoAdded;
+@property(readonly, copy, nonatomic) NSNumber *needsLove;
+@property(readonly, copy, nonatomic) NSString *friendmojiString;
+@property(readonly, copy, nonatomic) NSString *addSourceType;
+@property(readonly, copy, nonatomic) NSString *addSource;
+@property(readonly, copy, nonatomic) NSNumber *hiddenLink;
+@property(readonly, copy, nonatomic) NSNumber *ignoredLink;
+@property(readonly, copy, nonatomic) NSNumber *localStory;
+@property(readonly, copy, nonatomic) NSString *sharedStoryId;
+@property(readonly, copy, nonatomic) NSNumber *hasCustomDescription;
+@property(readonly, copy, nonatomic) NSNumber *isSharedStory;
+@property(readonly, copy, nonatomic) NSNumber *expiration;
+@property(readonly, copy, nonatomic) NSNumber *pendingSnapsCount;
+@property(readonly, copy, nonatomic) NSNumber *canSeeCustomStories;
+@property(readonly, copy, nonatomic) NSString *storyPrivacy;
+@property(readonly, copy, nonatomic) NSString *direction;
+@property(readonly, copy, nonatomic) NSNumber *reverseTs;
+@property(readonly, copy, nonatomic) NSNumber *ts;
+@property(readonly, copy, nonatomic) NSString *birthday;
+@property(readonly, copy, nonatomic) NSString *display;
+@property(readonly, copy, nonatomic) NSNumber *type;
+@property(readonly, copy, nonatomic) NSString *userId;
+@property(readonly, copy, nonatomic) NSString *name;
+@end
+
+@class NSArray, NSDictionary, NSNumber, NSString, SOJUSecurityFideliusFriendInfo;
+
+@interface SOJUFriend : NSObject <SOJUFriend>
+{
+    NSString *_name;
+    NSString *_userId;
+    NSNumber *_type;
+    NSString *_display;
+    NSString *_birthday;
+    NSNumber *_ts;
+    NSNumber *_reverseTs;
+    NSString *_direction;
+    NSString *_storyPrivacy;
+    NSNumber *_canSeeCustomStories;
+    NSNumber *_pendingSnapsCount;
+    NSNumber *_expiration;
+    NSNumber *_isSharedStory;
+    NSNumber *_hasCustomDescription;
+    NSString *_sharedStoryId;
+    NSNumber *_localStory;
+    NSNumber *_ignoredLink;
+    NSNumber *_hiddenLink;
+    NSString *_addSource;
+    NSString *_addSourceType;
+    NSString *_friendmojiString;
+    NSNumber *_needsLove;
+    NSNumber *_autoAdded;
+    NSNumber *_sojuNewLink;
+    NSNumber *_dontDecayThumbnail;
+    NSString *_venue;
+    NSArray *_friendmojiSymbols;
+    NSArray *_friendmojis;
+    NSNumber *_snapStreakCount;
+    NSNumber *_snapStreakExpiration;
+    NSString *_bitmojiAvatarId;
+    NSNumber *_potentialHighQualityScore;
+    NSNumber *_pendingChatsCount;
+    NSString *_bitmojiSelfieId;
+    NSNumber *_canBeSharedByFriendsDeprecated;
+    SOJUSecurityFideliusFriendInfo *_fideliusInfo;
+    NSString *_bitmojiSnapcodeSelfieId;
+    NSDictionary *_studySettings;
+    NSNumber *_isPopular;
+    NSNumber *_isStoryMuted;
+}
+
++ (unsigned long long *)fasterCodingKeys;
++ (unsigned long long)fasterCodingVersion;
++ (_Bool)canInitFromProto;
+@property(readonly, copy, nonatomic) NSNumber *isStoryMuted; // @synthesize isStoryMuted=_isStoryMuted;
+@property(readonly, copy, nonatomic) NSNumber *isPopular; // @synthesize isPopular=_isPopular;
+@property(readonly, copy, nonatomic) NSDictionary *studySettings; // @synthesize studySettings=_studySettings;
+@property(readonly, copy, nonatomic) NSString *bitmojiSnapcodeSelfieId; // @synthesize bitmojiSnapcodeSelfieId=_bitmojiSnapcodeSelfieId;
+@property(readonly, copy, nonatomic) SOJUSecurityFideliusFriendInfo *fideliusInfo; // @synthesize fideliusInfo=_fideliusInfo;
+@property(readonly, copy, nonatomic) NSNumber *canBeSharedByFriendsDeprecated; // @synthesize canBeSharedByFriendsDeprecated=_canBeSharedByFriendsDeprecated;
+@property(readonly, copy, nonatomic) NSString *bitmojiSelfieId; // @synthesize bitmojiSelfieId=_bitmojiSelfieId;
+@property(readonly, copy, nonatomic) NSNumber *pendingChatsCount; // @synthesize pendingChatsCount=_pendingChatsCount;
+@property(readonly, copy, nonatomic) NSNumber *potentialHighQualityScore; // @synthesize potentialHighQualityScore=_potentialHighQualityScore;
+@property(readonly, copy, nonatomic) NSString *bitmojiAvatarId; // @synthesize bitmojiAvatarId=_bitmojiAvatarId;
+@property(readonly, copy, nonatomic) NSNumber *snapStreakExpiration; // @synthesize snapStreakExpiration=_snapStreakExpiration;
+@property(readonly, copy, nonatomic) NSNumber *snapStreakCount; // @synthesize snapStreakCount=_snapStreakCount;
+@property(readonly, copy, nonatomic) NSArray *friendmojis; // @synthesize friendmojis=_friendmojis;
+@property(readonly, copy, nonatomic) NSArray *friendmojiSymbols; // @synthesize friendmojiSymbols=_friendmojiSymbols;
+@property(readonly, copy, nonatomic) NSString *venue; // @synthesize venue=_venue;
+@property(readonly, copy, nonatomic) NSNumber *dontDecayThumbnail; // @synthesize dontDecayThumbnail=_dontDecayThumbnail;
+@property(readonly, copy, nonatomic) NSNumber *sojuNewLink; // @synthesize sojuNewLink=_sojuNewLink;
+@property(readonly, copy, nonatomic) NSNumber *autoAdded; // @synthesize autoAdded=_autoAdded;
+@property(readonly, copy, nonatomic) NSNumber *needsLove; // @synthesize needsLove=_needsLove;
+@property(readonly, copy, nonatomic) NSString *friendmojiString; // @synthesize friendmojiString=_friendmojiString;
+@property(readonly, copy, nonatomic) NSString *addSourceType; // @synthesize addSourceType=_addSourceType;
+@property(readonly, copy, nonatomic) NSString *addSource; // @synthesize addSource=_addSource;
+@property(readonly, copy, nonatomic) NSNumber *hiddenLink; // @synthesize hiddenLink=_hiddenLink;
+@property(readonly, copy, nonatomic) NSNumber *ignoredLink; // @synthesize ignoredLink=_ignoredLink;
+@property(readonly, copy, nonatomic) NSNumber *localStory; // @synthesize localStory=_localStory;
+@property(readonly, copy, nonatomic) NSString *sharedStoryId; // @synthesize sharedStoryId=_sharedStoryId;
+@property(readonly, copy, nonatomic) NSNumber *hasCustomDescription; // @synthesize hasCustomDescription=_hasCustomDescription;
+@property(readonly, copy, nonatomic) NSNumber *isSharedStory; // @synthesize isSharedStory=_isSharedStory;
+@property(readonly, copy, nonatomic) NSNumber *expiration; // @synthesize expiration=_expiration;
+@property(readonly, copy, nonatomic) NSNumber *pendingSnapsCount; // @synthesize pendingSnapsCount=_pendingSnapsCount;
+@property(readonly, copy, nonatomic) NSNumber *canSeeCustomStories; // @synthesize canSeeCustomStories=_canSeeCustomStories;
+@property(readonly, copy, nonatomic) NSString *storyPrivacy; // @synthesize storyPrivacy=_storyPrivacy;
+@property(readonly, copy, nonatomic) NSString *direction; // @synthesize direction=_direction;
+@property(readonly, copy, nonatomic) NSNumber *reverseTs; // @synthesize reverseTs=_reverseTs;
+@property(readonly, copy, nonatomic) NSNumber *ts; // @synthesize ts=_ts;
+@property(readonly, copy, nonatomic) NSString *birthday; // @synthesize birthday=_birthday;
+@property(readonly, copy, nonatomic) NSString *display; // @synthesize display=_display;
+@property(readonly, copy, nonatomic) NSNumber *type; // @synthesize type=_type;
+@property(readonly, copy, nonatomic) NSString *userId; // @synthesize userId=_userId;
+@property(readonly, copy, nonatomic) NSString *name; // @synthesize name=_name;
+@property(readonly, copy) NSString *description;
+- (_Bool)isEqual:(id)arg1;
+- (void)setObject:(id)arg1 forUInt64Key:(unsigned long long)arg2;
+- (void)decodeWithFasterDecoder:(id)arg1;
+- (void)encodeWithFasterCoder:(id)arg1;
+- (_Bool)preferFasterCoding;
+- (void)encodeWithCoder:(id)arg1;
+- (id)initWithCoder:(id)arg1;
+- (id)copyWithZone:(struct _NSZone *)arg1;
+- (id)initWithName:(id)arg1 userId:(id)arg2 type:(id)arg3 display:(id)arg4 birthday:(id)arg5 ts:(id)arg6 reverseTs:(id)arg7 direction:(id)arg8 storyPrivacy:(id)arg9 canSeeCustomStories:(id)arg10 pendingSnapsCount:(id)arg11 expiration:(id)arg12 isSharedStory:(id)arg13 hasCustomDescription:(id)arg14 sharedStoryId:(id)arg15 localStory:(id)arg16 ignoredLink:(id)arg17 hiddenLink:(id)arg18 addSource:(id)arg19 addSourceType:(id)arg20 friendmojiString:(id)arg21 needsLove:(id)arg22 autoAdded:(id)arg23 sojuNewLink:(id)arg24 dontDecayThumbnail:(id)arg25 venue:(id)arg26 friendmojiSymbols:(id)arg27 friendmojis:(id)arg28 snapStreakCount:(id)arg29 snapStreakExpiration:(id)arg30 bitmojiAvatarId:(id)arg31 potentialHighQualityScore:(id)arg32 pendingChatsCount:(id)arg33 bitmojiSelfieId:(id)arg34 canBeSharedByFriendsDeprecated:(id)arg35 fideliusInfo:(id)arg36 bitmojiSnapcodeSelfieId:(id)arg37 studySettings:(id)arg38 isPopular:(id)arg39 isStoryMuted:(id)arg40;
+- (id)toJson;
+- (id)toDictionary;
+- (id)initWithJSONDictionary:(id)arg1;
+- (_Bool)isStoryMutedValue;
+- (_Bool)isPopularValue;
+- (_Bool)canBeSharedByFriendsDeprecatedValue;
+- (int)pendingChatsCountValue;
+- (int)potentialHighQualityScoreValue;
+- (long long)snapStreakExpirationValue;
+- (int)snapStreakCountValue;
+- (_Bool)dontDecayThumbnailValue;
+- (_Bool)sojuNewLinkValue;
+- (_Bool)autoAddedValue;
+- (_Bool)needsLoveValue;
+- (long long)addSourceTypeEnum;
+- (_Bool)hiddenLinkValue;
+- (_Bool)ignoredLinkValue;
+- (_Bool)localStoryValue;
+- (_Bool)hasCustomDescriptionValue;
+- (_Bool)isSharedStoryValue;
+- (long long)expirationValue;
+- (int)pendingSnapsCountValue;
+- (_Bool)canSeeCustomStoriesValue;
+- (long long)storyPrivacyEnum;
+- (long long)reverseTsValue;
+- (long long)tsValue;
+- (long long)typeEnum;
+- (int)typeValue;
+- (id)initWithProtoBuf:(id)arg1;
+- (id)initWithProtoBinary:(id)arg1;
+
+// Remaining properties
+@property(readonly, copy) NSString *debugDescription;
+@property(readonly) Class superclass;
+
+@end

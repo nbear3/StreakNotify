@@ -43,7 +43,7 @@
         NSDictionary *friendNamesAndEmojis = [NSDictionary dictionaryWithContentsOfFile:@"/var/root/Documents/streaknotifyd"];
         
         /* crash the app if it doesn't exist, which shouldn't happen if everything is working */
-        if(!friendNamesAndEmojis){
+        if (!friendNamesAndEmojis) {
             NSLog(@"friendmojilist:: Fatal - the dictionary that the daemon should save doesn't exist");
             // instead of exiting, let the user know that the file is not found or the system call to access the file failed
             // people think that his is a crash, and it's not... issa bug
@@ -63,12 +63,12 @@
         friendsWithStreaksNames = [friendsWithStreaksNames sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
         friendsWithoutStreaksNames = [friendsWithoutStreaksNames sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
         
-        for(NSString *name in friendsWithStreaksNames){
+        for (NSString *name in friendsWithStreaksNames) {
             NSString *friendmoji = [friendsWithStreaks objectForKey:name];
             [friendmojisWithStreaks addObject:friendmoji];
         }
         
-        for(NSString *name in friendsWithoutStreaksNames){
+        for (NSString *name in friendsWithoutStreaksNames) {
             NSString *friendmoji = [friendsWithoutStreaks objectForKey:name];
             [friendmojisWithoutStreaks addObject:friendmoji];
         }
@@ -154,7 +154,7 @@ numberOfRowsInSection:(NSInteger)section{
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:identifier];
     
     if(!cell){
-        cell = [[FriendmojiCell alloc] initWithStyle:UITableViewCellStyleDefault
+        cell = [[FriendmojiCell alloc] initWithStyle:UITableViewCellStyleValue1
                                      reuseIdentifier:identifier];
         
     }
@@ -164,7 +164,8 @@ numberOfRowsInSection:(NSInteger)section{
             FriendmojiCell *friendmojiCell = (FriendmojiCell*)cell;
             NSString *name = [self.friendsWithStreaksNames objectAtIndex:indexPath.row];
             NSString *friendmoji = [self.friendmojisWithStreaks objectAtIndex:indexPath.row];
-            friendmojiCell.textLabel.text = [NSString stringWithFormat:@"%@ %@",name,friendmoji];
+            friendmojiCell.textLabel.text = name;
+            friendmojiCell.detailTextLabel.text = friendmoji;
             NSLog(@"friendmojilist::Cell for index %ld name %@ %@",(long)indexPath.row,name,friendmoji);
             if([self.settings[name] boolValue]){
                 friendmojiCell.accessoryType = UITableViewCellAccessoryCheckmark;
@@ -172,13 +173,13 @@ numberOfRowsInSection:(NSInteger)section{
                 friendmojiCell.accessoryType = UITableViewCellAccessoryNone;
             }
         }
-    } else if(indexPath.section == 1){
-        if([cell isKindOfClass:[FriendmojiCell class]]){
-            
+    } else if(indexPath.section == 1) {
+        if ([cell isKindOfClass:[FriendmojiCell class]]) {
             FriendmojiCell *friendmojiCell = (FriendmojiCell*)cell;
             NSString *name = [self.friendsWithoutStreaksNames objectAtIndex:indexPath.row];
             NSString *friendmoji = [self.friendmojisWithoutStreaks objectAtIndex:indexPath.row];
-            friendmojiCell.textLabel.text = [NSString stringWithFormat:@"%@ %@",name,friendmoji];
+            friendmojiCell.textLabel.text = name;
+            friendmojiCell.detailTextLabel.text = friendmoji;
             NSLog(@"friendmojilist:: Cell for index %ld name %@ %@",(long)indexPath.row,name,friendmoji);
             if([self.settings[name] boolValue]){
                 friendmojiCell.accessoryType = UITableViewCellAccessoryCheckmark;
@@ -188,7 +189,6 @@ numberOfRowsInSection:(NSInteger)section{
         }
     }
     return cell;
-
 }
 
 -(void)tableView:(UITableView *)tableView
@@ -220,7 +220,6 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
     [settings writeToFile:@"/var/mobile/Library/Preferences/com.YungRaj.friendmoji.plist"
                atomically:YES];
     NSLog(@"friendmojilist::Saved settings");
-    
 }
 
 @end
